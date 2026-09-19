@@ -2,7 +2,7 @@
 #include <WebServer.h>
 #include "index_html.h" // 引入独立存放的网页
 #include "style_css.h"  // 引入独立存放的网页
-#include "proximity.h"  // 检测距离的库
+#include "proximity_wifi.h"  // 检测距离的库
 #include <ArduinoJson.h>
 
 // ====== 热点配置 ======
@@ -67,8 +67,8 @@ void handleStatus() {
   unsigned long uptimeSec = (millis() - bootMillis) / 1000;
 
   StaticJsonDocument<512> doc;
-  doc["isDevNear"]   = isDevsProximity();
-  doc["currentRSSI"] = getAverageRSSI();
+  doc["isDevNear"]   = wifi_isDevsProximity();
+  doc["currentRSSI"] = wifi_getAverageRSSI();
   doc["temp"]        = temp;
   doc["uptime"]      = formatUptime(uptimeSec);
   doc["lastText1"]   = g_lastReceivedText1;
@@ -111,7 +111,7 @@ void loop()
     if (millis() - lastCheck >= 500)
     {
         lastCheck = millis();
-        bool isDevsNearCurrent = isDevsProximity();
+        bool isDevsNearCurrent = wifi_isDevsProximity();
 
         if (isDevsNearCurrent == true && isDevsNearLast == false)
         { // 由远变近

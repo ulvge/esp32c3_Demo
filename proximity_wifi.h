@@ -1,24 +1,24 @@
-#ifndef __PROXIMITY_H
-#define __PROXIMITY_H
+#ifndef __PROXIMITY_WIFI_H
+#define __PROXIMITY_WIFI_H
 
 #include <esp_wifi.h>
 
 // ===== 可调参数（实测后修改） =====
-const int RSSI_NEAR_THRESHOLD = -55; // 大于等于此值 → 近
-const int RSSI_FAR_THRESHOLD = -62;  // 小于此值 → 远
+static const int RSSI_NEAR_THRESHOLD = -55; // 大于等于此值 → 近
+static const int RSSI_FAR_THRESHOLD = -62;  // 小于此值 → 远
                                      // 中间 -56 ~ -61 是死区，保持原状态
                                      
-const int RSSI_FAR_FAR = -100;  // 默认的 RSSI 值，表示没有设备
-const int SAMPLE_COUNT = 10;         // 滑动平均样本数
+static const int RSSI_FAR_FAR = -100;  // 默认的 RSSI 值，表示没有设备
+static const int SAMPLE_COUNT = 10;         // 滑动平均样本数
 
 // ===== 内部状态 =====
-int rssiBuffer[SAMPLE_COUNT] = {0};
-int rssiIndex = 0;
-bool isBufferFull = false;
-bool isDevsNear = false; // 当前判定结果
+static int rssiBuffer[SAMPLE_COUNT] = {0};
+static int rssiIndex = 0;
+static bool isBufferFull = false;
+static bool isDevsNear = false; // 当前判定结果
 
 // 读取当前连接客户端的 RSSI（AP 模式下第一个客户端）
-int readClientRSSI()
+static int wifi_readClientRSSI()
 {
     wifi_sta_list_t staList;
     esp_wifi_ap_get_sta_list(&staList);
@@ -30,9 +30,9 @@ int readClientRSSI()
 }
 
 // 更新滑动平均并判断近/远，返回是否“近”
-bool isDevsProximity()
+bool wifi_isDevsProximity()
 {
-    int raw = readClientRSSI();
+    int raw = wifi_readClientRSSI();
 
     // 写入环形缓冲
     rssiBuffer[rssiIndex] = raw;
@@ -65,7 +65,7 @@ bool isDevsProximity()
 }
 
 // 给网页用的原始平均值（调试用）
-int getAverageRSSI()
+int wifi_getAverageRSSI()
 {
     int validDataCount = isBufferFull ? SAMPLE_COUNT : rssiIndex;
     if (validDataCount == 0)
