@@ -65,7 +65,7 @@ const char g_indexHTML[] PROGMEM = R"rawliteral(
         .then(data => {
           document.getElementById('status').innerHTML =
             '设备是否靠近：' + (data.isDevNear ? '是' : '否') + '<br>' +
-            '当前 RSSI: ' + data.currentRSSI + '<br>' +
+            '当前 ' + data.rssiSource + ' RSSI: ' + data.currentRSSI + '<br>' +
             '芯片温度：' + data.temp.toFixed(1) + ' °C<br>' +
             '运行时间：' + data.uptime + '<br>' +
             '最后收到：' + (data.lastText1 || '（还没收到输入）') + '<br>' +

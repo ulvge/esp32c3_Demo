@@ -3,7 +3,12 @@
 #include "index_html.h" // 引入独立存放的网页
 #include "style_css.h"  // 引入独立存放的网页
 #include "proximity_wifi.h"  // 检测距离的库
+#include "proximity_BLE.h"  // 检测距离的库
 #include <ArduinoJson.h>
+
+#define RSSI_FROM_WIFI 1
+#define RSSI_FROM_BLE 2
+int g_rssiSource = RSSI_FROM_BLE; // 默认使用 BLE 检测距离
 
 // ====== 热点配置 ======
 const char *AP_SSID = "5532";      // 手机搜到的 WiFi 名
@@ -67,8 +72,15 @@ void handleStatus() {
   unsigned long uptimeSec = (millis() - bootMillis) / 1000;
 
   StaticJsonDocument<512> doc;
-  doc["isDevNear"]   = wifi_isDevsProximity();
-  doc["currentRSSI"] = wifi_getAverageRSSI();
+  if (g_rssiSource == RSSI_FROM_WIFI) {
+    doc["rssiSource"] = "WiFi";
+    doc["isDevNear"]   = wifi_isDevsProximity();
+    doc["currentRSSI"] = wifi_getAverageRSSI();
+  } else{ // if (g_rssiSource == RSSI_FROM_BLE) {
+    doc["rssiSource"] = "BLE";
+    doc["isDevNear"]   = BLE_isDevsProximity();
+    doc["currentRSSI"] = BLE_getAverageRSSI();
+  }
   doc["temp"]        = temp;
   doc["uptime"]      = formatUptime(uptimeSec);
   doc["lastText1"]   = g_lastReceivedText1;
@@ -76,7 +88,7 @@ void handleStatus() {
 
   String json;
   serializeJson(doc, json);
-  server.send(200, "application/json", json);
+  server.send(500, "application/json", json);
 }
 void setup()
 {
@@ -97,6 +109,12 @@ void setup()
     server.on("/submit", handleSubmit);
     server.on("/status", handleStatus); // 新增
 
+    // 初始化 BLE 扫描（新增）
+    if (g_rssiSource == RSSI_FROM_BLE) {
+        BLE_initProximity();
+        Serial.println("BLE scanner initialized successfully.");
+    }
+
     server.begin();
     Serial.println("AP server started successfully.");
 }
@@ -105,13 +123,18 @@ bool isDevsNearLast = false;
 unsigned long lastCheck = 0;
 void loop()
 {
+    bool isDevsNearCurrent;
     server.handleClient();
 
     // 每 500ms 判断一次，和网页刷新节奏一致
     if (millis() - lastCheck >= 500)
     {
         lastCheck = millis();
-        bool isDevsNearCurrent = wifi_isDevsProximity();
+        if (g_rssiSource == RSSI_FROM_WIFI) {
+            isDevsNearCurrent = wifi_isDevsProximity();
+        } else {// } if (g_rssiSource == RSSI_FROM_BLE) { // 默认使用 BLE 检测距离
+            isDevsNearCurrent = BLE_isDevsProximity();
+        } 
 
         if (isDevsNearCurrent == true && isDevsNearLast == false)
         { // 由远变近
