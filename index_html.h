@@ -64,9 +64,12 @@ const char g_indexHTML[] PROGMEM = R"rawliteral(
         .then(r => r.json())
         .then(data => {
           document.getElementById('status').innerHTML =
+            '设备是否靠近：' + (data.isDevNear ? '是' : '否') + '<br>' +
+            '当前 RSSI: ' + data.currentRSSI + '<br>' +
             '芯片温度：' + data.temp.toFixed(1) + ' °C<br>' +
-            '运行时间：' + data.uptime + ' 秒<br>' +
-            '最后收到：' + (data.lastText || '（还没收到输入）');
+            '运行时间：' + data.uptime + '<br>' +
+            '最后收到：' + (data.lastText1 || '（还没收到输入）') + '<br>' +
+            '最后收到：' + (data.lastText2 || '（还没收到输入）');
         })
         .catch(() => {
           // 网络抖动时不要清空显示，避免闪烁
