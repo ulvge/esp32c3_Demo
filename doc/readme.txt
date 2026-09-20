@@ -15,3 +15,12 @@ esp32 c3开发板，luatos
 环境搭建
 https://jihulab.com/esp-mirror/espressif/arduino-esp32/-/raw/gh-pages/package_esp32_index_cn.json
 ******************************************************************************
+
+
+
+2026年9月20日14:06:53
+
+官网资料下载地址
+https://wiki-zh.luatos.org/chips/esp32c3/board.html#id3
+******************************************************************************
+
